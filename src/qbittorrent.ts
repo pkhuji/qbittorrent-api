@@ -2,18 +2,15 @@ import { parse as cookieParse } from 'cookie';
 import { FormData } from 'node-fetch-native';
 import { ofetch } from 'ofetch';
 import { joinURL } from 'ufo';
-import { base64ToUint8Array, isUint8Array, stringToUint8Array } from 'uint8array-extras';
+import { base64ToUint8Array } from 'uint8array-extras';
 
-import { magnetDecode } from '@ctrl/magnet-link';
 import type {
-  AddTorrentOptions as NormalizedAddTorrentOptions,
   AllClientData,
   Label,
   NormalizedTorrent,
   TorrentClientConfig,
   TorrentClientState,
 } from '@ctrl/shared-torrent';
-import { hash } from '@ctrl/torrent-file';
 
 import { normalizeTorrentData } from './normalizeTorrentData.js';
 import type {
@@ -49,7 +46,6 @@ interface TorrentClient {
   queueUp(id: any): Promise<unknown>;
   queueDown(id: any): Promise<unknown>;
   addTorrent(torrent: string | Uint8Array, options?: any): Promise<unknown>;
-  normalizedAddTorrent(torrent: string | Uint8Array, options?: Partial<AddTorrentOptions>): Promise<NormalizedTorrent>;
 }
 
 interface QBittorrentState extends TorrentClientState {
@@ -710,40 +706,6 @@ export class QBittorrent implements TorrentClient {
     }
 
     return true;
-  }
-
-  async normalizedAddTorrent(
-    torrent: string | Uint8Array,
-    options: Partial<NormalizedAddTorrentOptions> = {},
-  ): Promise<NormalizedTorrent> {
-    const torrentOptions: Partial<AddTorrentOptions> = {};
-
-    if (options.startPaused) {
-      torrentOptions.paused = 'true';
-    }
-
-    if (options.label) {
-      torrentOptions.category = options.label;
-    }
-
-    let torrentHash: string | undefined;
-    if (typeof torrent === 'string' && torrent.startsWith('magnet:')) {
-      torrentHash = magnetDecode(torrent).infoHash;
-      if (!torrentHash) {
-        throw new Error('Magnet did not contain hash');
-      }
-
-      await this.addMagnet(torrent, torrentOptions);
-    } else {
-      if (!isUint8Array(torrent)) {
-        torrent = stringToUint8Array(torrent);
-      }
-
-      torrentHash = hash(torrent);
-      await this.addTorrent(torrent, torrentOptions);
-    }
-
-    return this.getTorrent(torrentHash);
   }
 
   /**

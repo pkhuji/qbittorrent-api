@@ -72,18 +72,7 @@ it('should add torrent with label', async () => {
   expect(torrents.length).toBe(1);
   expect(torrents[0]!.category).toBe('swag');
 });
-it('should add normalized torrent with label', async () => {
-  const client = new QBittorrent({ baseUrl, username, password });
-  const res = await client.normalizedAddTorrent(torrentFileBuffer, {
-    label: 'swag',
-    startPaused: true,
-  });
-  expect(res.id).toBe('e84213a794f3ccd890382a54a64ca68b7e925433');
-  expect(res.label).toBe('swag');
-  expect(res.name).toBe(torrentName);
-  await waitForTorrent(client);
-  await client.removeCategory('swag');
-});
+
 it('should add torrent with savePath', async () => {
   const client = new QBittorrent({ baseUrl, username, password });
   const path = '/downloads/linux/';
@@ -259,31 +248,6 @@ it('should return normalized torrent data', async () => {
   expect(torrent.uploadSpeed).toBe(0);
 });
 // For some reason fails on github actions
-it.skip('should add normalized torrent from magnet', async () => {
-  const client = new QBittorrent({ baseUrl, username, password });
-  const torrent = await client.normalizedAddTorrent(magnet, { startPaused: true });
-  expect(torrent.connectedPeers).toBe(0);
-  expect(torrent.connectedSeeds).toBe(0);
-  expect(torrent.downloadSpeed).toBe(0);
-  expect(torrent.eta).toBe(8640000);
-  expect(torrent.isCompleted).toBe(false);
-  expect(torrent.label).toBe('');
-  expect(torrent.name).toBe('Ubuntu 11 10 Alternate Amd64 Iso');
-  expect(torrent.progress).toBe(0);
-  expect(torrent.queuePosition).toBe(1);
-  expect(torrent.ratio).toBe(0);
-  expect(torrent.savePath).toEqual(expect.stringMatching(/downloads/i));
-  // state sometimes depends on speed of processor
-  // expect(torrent.state).toBe(TorrentState.checking);
-  // expect(torrent.stateMessage).toBe('');
-  expect(torrent.totalDownloaded).toBe(0);
-  expect(torrent.totalPeers).toBe(0);
-  expect(torrent.totalSeeds).toBe(0);
-  // expect(torrent.totalSelected).toBe(1953349632);
-  // expect(torrent.totalSize).toBe(1953349632);
-  expect(torrent.totalUploaded).toBe(0);
-  expect(torrent.uploadSpeed).toBe(0);
-});
 it('should get preferences', async () => {
   const client = new QBittorrent({ baseUrl, username, password });
   const preferences = await client.getPreferences();
