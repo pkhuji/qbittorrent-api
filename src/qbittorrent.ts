@@ -10,7 +10,6 @@ import type {
   AllClientData,
   Label,
   NormalizedTorrent,
-  TorrentClient,
   TorrentClientConfig,
   TorrentClientState,
 } from '@ctrl/shared-torrent';
@@ -35,6 +34,23 @@ import type {
   UploadSpeed,
   WebSeed,
 } from './types.js';
+
+interface TorrentClient {
+  config: TorrentClientConfig;
+  state: TorrentClientState;
+  /**
+   * Returns all torrent data. Data has been normalized
+   */
+  getAllData(): Promise<AllClientData>;
+  getTorrent(id: any): Promise<NormalizedTorrent>;
+  pauseTorrent(id: any): Promise<unknown>;
+  resumeTorrent(id: any): Promise<unknown>;
+  removeTorrent(id: any, removeData?: boolean): Promise<unknown>;
+  queueUp(id: any): Promise<unknown>;
+  queueDown(id: any): Promise<unknown>;
+  addTorrent(torrent: string | Uint8Array, options?: any): Promise<unknown>;
+  normalizedAddTorrent(torrent: string | Uint8Array, options?: Partial<AddTorrentOptions>): Promise<NormalizedTorrent>;
+}
 
 interface QBittorrentState extends TorrentClientState {
   auth?: {
