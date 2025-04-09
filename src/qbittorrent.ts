@@ -1,7 +1,6 @@
 import { parse as cookieParse } from 'cookie';
 import { FormData } from 'node-fetch-native';
 import { ofetch } from 'ofetch';
-import type { Jsonify } from 'type-fest';
 import { joinURL } from 'ufo';
 import { base64ToUint8Array, isUint8Array, stringToUint8Array } from 'uint8array-extras';
 
@@ -65,20 +64,6 @@ const defaults: TorrentClientConfig = {
 };
 
 export class QBittorrent implements TorrentClient {
-  /**
-   * Create a new QBittorrent client from a state
-   */
-  static createFromState(
-    config: Readonly<TorrentClientConfig>,
-    state: Readonly<Jsonify<QBittorrentState>>,
-  ): QBittorrent {
-    const client = new QBittorrent(config);
-    client.state = {
-      ...state,
-      auth: state.auth ? { ...state.auth, expires: new Date(state.auth.expires) } : undefined, 
-    };
-    return client;
-  }
 
   config: TorrentClientConfig;
   state: QBittorrentState = {};
@@ -86,21 +71,7 @@ export class QBittorrent implements TorrentClient {
   constructor(options: Partial<TorrentClientConfig> = {}) {
     this.config = { ...defaults, ...options };
   }
-
-  /**
-   * Export the state of the client as JSON
-   */
-  exportState(): Jsonify<QBittorrentState> {
-    return JSON.parse(JSON.stringify(this.state));
-  }
-
-  /**
-   * @deprecated
-   */
-  async version(): Promise<string> {
-    return this.getAppVersion();
-  }
-
+ 
   /**
    * Get application version
    * {@link https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#get-application-version}
@@ -925,7 +896,7 @@ export class QBittorrent implements TorrentClient {
   /**
    * {@link https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#login}
    */
-  async login(): Promise<boolean> {
+  private async login(): Promise<boolean> {
     const url = joinURL(this.config.baseUrl, this.config.path ?? '', '/auth/login');
 
     const res = await ofetch.raw(url, {
@@ -966,11 +937,6 @@ export class QBittorrent implements TorrentClient {
     // Check version after successful login
     // Not needed here anymore because its called just before verifying app version
     // await this.checkVersion();
-    return true;
-  }
-
-  logout(): boolean {
-    delete this.state.auth;
     return true;
   }
 

@@ -45,18 +45,6 @@ afterEach(async () => {
     await client.removeTorrent(torrent.hash, false);
   }
 });
-
-it('should login', async () => {
-  const client = new QBittorrent({ baseUrl, username, password });
-  const res = await client.login();
-  expect(res).toBe(true);
-});
-it('should logout', async () => {
-  const client = new QBittorrent({ baseUrl, username, password });
-  await client.login();
-  const res = await client.login();
-  expect(res).toBe(true);
-});
 it('should add torrent from string', async () => {
   const client = new QBittorrent({ baseUrl, username, password });
   const res = await client.addTorrent(torrentFileBuffer.toString('base64'));
@@ -382,14 +370,4 @@ it('should be able to get the default save path', async () => {
   const p = await client.getDefaultSavePath();
   expect(p).not.toBeUndefined();
   expect(p.toLowerCase()).toContain('/downloads');
-});
-
-it('should be able to export and create from state', async () => {
-  const client = new QBittorrent({ baseUrl, username, password });
-  await client.login();
-  const state = client.exportState();
-  const client2 = QBittorrent.createFromState(client.config, state);
-  expect(client2).toBeDefined();
-  expect(client2.state.auth?.sid).toBeDefined();
-  expect(client2.state.auth?.expires).toBeInstanceOf(Date);
 });
