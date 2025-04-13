@@ -89,27 +89,13 @@ export class QBittorrent implements TorrentClient {
    * {@link https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#get-application-version}
    */
   async getAppVersion(): Promise<string> {
-    const res = await this.request<string>(
-      '/app/version',
-      'GET',
-      undefined,
-      undefined,
-      undefined,
-      false,
-    );
-    return res;
+    await this.checkVersion()
+    return this.state.version?.version || ""
   }
 
   async getApiVersion(): Promise<string> {
-    const res = await this.request<string>(
-      '/app/webapiVersion',
-      'GET',
-      undefined,
-      undefined,
-      undefined,
-      false,
-    );
-    return res;
+    await this.checkVersion()
+    return this.state.version?.apiVersion || ""
   }
 
   /**
@@ -992,8 +978,22 @@ export class QBittorrent implements TorrentClient {
 
   private async checkVersion(): Promise<void> {
     if (!this.state.version?.version) {
-      const version = await this.getAppVersion();
-      const apiVersion = await this.getApiVersion();
+      const version = await this.request<string>(
+        '/app/version',
+        'GET',
+        undefined,
+        undefined,
+        undefined,
+        false,
+      );
+      const apiVersion = await this.request<string>(
+        '/app/webapiVersion',
+        'GET',
+        undefined,
+        undefined,
+        undefined,
+        false,
+      );
       this.state.version = {
         version,
         apiVersion,
